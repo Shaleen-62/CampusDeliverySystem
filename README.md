@@ -1,4 +1,4 @@
-To run code Clone the repo and cd to the project directory.
+Clone the repo and cd to the project directory.
 
 To run the app run `python manage.py runserver`
 
