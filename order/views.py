@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from canteen.models import FoodItem
 from django.db.models import Q
+from django.core.mail import send_mail
+from django.conf import settings
 from .models import Cart, Orders, OrderItems
 from .forms import LoginRegisterForm
 import random
