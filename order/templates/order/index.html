@@ -1,0 +1,37 @@
+{% extends 'base/base.html' %}
+{% block title %}Campus Delivery System{% endblock title %}
+{% block maincontent %}
+    <div style="display: flex; flex-wrap: wrap;">
+        {% for f in food %}
+            <div class="card shadow-lg m-2" style="width:18rem;">
+                <img src="{{f.image.url}}" class="card-img-top" style="height:220px;" alt='image not found'>
+                <div class="card-body">
+                    <h3 class="card-title">{{f.name | title}}</h3>
+                    <h5 class="card-title">Price - {{f.price | title}}</h5>
+                    <p class="card-text">Restaurant - {{f.restaurant | title}}</p>
+                    <!-- <p class="card-text">restaurant - {{f.restaurant | title}}</p> -->
+                    {% for item in cartitems %}
+                        {% if f.name == item.0 and item.1 != '0' %}
+                            <div class="d-flex float-bottom">
+                                {% if item.1 == 1 %}
+                                    <a class="btn btn-danger" href="{% url 'update-cart' f.id %}?name=delete_cart_item"><i class="fa-solid fa-trash"></i></a>
+                                {% else %}
+                                    <a class="btn btn-warning" href="{% url 'update-cart' f.id %}?name=decrease_cart"><i class="fa-solid fa-minus"></i></a>
+                                {% endif %}
+                                <h5 class="card-title mx-1">{{item.1}}</h5>
+                                <a class="btn btn-primary" href="{% url 'update-cart' f.id %}?name=increase_cart"><i class="fa-solid fa-plus"></i></a>
+								<a class="btn btn-danger position-absolute end-0 mx-2" href="{% url 'update-cart' f.id %}?name=delete_cart_item"><i class="fa-solid fa-trash"></i></a>
+                            </div>
+                        {% endif %}
+                        {% if f.name == item.0 and item.1 == '0' %}
+                            <a href="{% url 'update-cart' f.id %}" class="btn btn-success"><i class="fa-solid fa-cart-shopping"></i> Cart</a>
+                        {% endif %}
+                    {% endfor %}
+                    {% if request.user.is_anonymous %}
+                        <a href="{% url 'update-cart' f.id %}" class="btn btn-success">Cart</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock maincontent %}

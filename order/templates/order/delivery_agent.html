@@ -1,0 +1,17 @@
+{% extends 'base/base.html' %}
+{% block title %}Login Here{% endblock title %}
+{% block maincontent %}
+    <h1>Orders to Deliver</h1>
+    <ul>
+        {% for order in orders %}
+            <li>{{ order.id }} - {{ order.username }}
+                <form method="post" action="{% url 'delivery_agent' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="order_id" value="{{ order.id }}">
+                    <button type="submit">Mark as Delivered</button>
+                </form>
+            </li>
+        {% endfor %}
+        </ul>
+
+{% endblock maincontent %}

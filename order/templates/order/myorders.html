@@ -1,0 +1,100 @@
+{% extends 'base/base.html' %}
+{% block title %}My Orders{% endblock title %}
+{% block maincontent %}
+
+{% if orders %}
+<table class="table table-striped text-center table-bordered">
+  <thead>
+	<tr>
+	  <th scope="col">Order Id</th>
+	  <th scope="col">Order Date</th>
+	  <th scope="col">Amount Paid</th>
+	  <th scope="col">Payment Mode</th>
+	  <th scope="col">Order Status</th>
+	  <th scope="col">Order Details</th>
+	</tr>
+  </thead>
+  <tbody class="table-group-divider">
+	  {% for order in orders %}
+	<tr>
+	  <th scope="row">#{{order.id}}</th>
+	  <td>{{order.order_datetime}}</td>
+	  <td>{{order.total_amount}}</td>
+	  <td>{{order.payment_mode}}</td>
+	  <td>
+		{{order.status}}
+		<div class="progress">
+			{% if order.status == "Pending" %}
+				<div class="progress-bar bg-secondary progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+			{% elif order.status == "Accepted" %}
+				<div class="progress-bar bg-info progress-bar-striped" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+			{% elif order.status == "Cooking" %}
+				<div class="progress-bar bg-primary progress-bar-striped" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+			{% elif order.status == "Packed" %}
+				<div class="progress-bar bg-warning progress-bar-striped" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>	
+			{% elif order.status == "Completed" %}
+				<div class="progress-bar bg-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+			{% endif %}
+		</div>
+	</td>
+	  <td>
+		<button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#orderNumber{{order.id}}">
+		View details
+	  </button>
+	</td>
+	</tr>
+	{% endfor %}
+  </tbody>
+</table>
+{% for order in orders %}
+<div class="modal fade" id="orderNumber{{order.id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+	<div class="modal-content">
+	  <div class="modal-header">
+		<h1 class="modal-title fs-5" id="exampleModalLabel">Order Details for Order Id: #{{order.id}}</h1>
+		<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	  </div>
+	  <div class="modal-body">
+		  <p class="m-0"><span class="fw-bold">Ordered On:</span> {{order.order_datetime}}</p>
+		  <p class="m-0"><span class="fw-bold">Amount Paid:</span> {{order.total_amount}}</p>
+		  <p class="m-0"><span class="fw-bold">Transaction Id:</span> {{order.transaction_id}}</p>
+		  <p class="m-0"><span class="fw-bold">Payment Mode:</span> {{order.payment_mode}}</p>
+		  <p class="m-0"><span class="fw-bold">Payment Gateway:</span> {{order.payment_gateway}}</p>
+		  <p class="m-0"><span class="fw-bold">Order Status:</span> {{order.status}}</p>
+		  <hr>
+		  <h3>Your Order</h3>
+		  <table class="table table-striped text-center table-bordered">
+			<thead>
+			  <tr>
+				<th scope="col">Food</th>
+				<th scope="col">Price</th>
+				<th scope="col">Quantity</th>
+				<th scope="col">Amount</th>
+			  </tr>
+			</thead>
+			<tbody class="table-group-divider">
+			{% for item in order_items %}
+				{% if item.order.id == order.id %}
+					  <tr>
+						<th scope="row">{{item.name}}</th>
+						<td>{{item.price}}</td>
+						<td>{{item.quantity}}</td>
+						<td>{{item.item_total}}</td>
+					  </tr>
+				{% endif %}
+			{% endfor %}
+		</tbody>
+	</table>
+	  </div>
+	  <div class="modal-footer">
+		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+	  </div>
+	</div>
+  </div>
+</div>
+{% endfor %}
+{% else %}
+  <h1 class="alert alert-info text-center mt-5">You Have Not Places Any Orders Yet</h1>
+{% endif %}
+
+{% endblock maincontent %}

@@ -1,0 +1,141 @@
+{% extends 'base/base.html' %}
+{% block title %}Your Cart{% endblock title %}
+{% block maincontent %}
+
+	{% if cartitems %}
+		<div class="row border rounded-5 border-primary m-5 p-5">
+			<div class="col-md-8">
+				{% for item in cartitems %}
+					<div class="card mb-3" style="max-width: 540px;">
+						<div class="row g-0">
+							<div class="col-md-4">
+								<img src="{{item.food.image.url}}" class="img-fluid rounded-start"  style="height:180px; width:220px;">
+							</div>
+							<div class="col-md-8">
+								<div class="card-body">
+									<div class="d-flex justify-content-between">
+										<div>
+											<h5 class="card-title">{{item.food.name | title}}</h5>
+											<p class="card-text">{{item.food.restaurant | title}}</p>
+											<!-- <p class="card-text">{{item.food.restaurant | title}}</p> -->
+										</div>
+										<div>
+											<a class="btn btn-danger" href="{% url 'update-cart' item.food.id %}?name=delete_cart_item"><i class="fa-solid fa-trash"></i></a>
+										</div>
+									</div>
+									<div class="d-flex justify-content-between text-center mt-4">
+										<div class="border rounded">
+											<h5 class="card-title border-bottom m-1">Price</h5>
+											<h5 class="card-title">{{item.food.price | title}}</h5>
+										</div>
+										<div class="border rounded">
+											<h5 class="card-title border-bottom m-1">Quantity</h5>
+											<div class="d-flex">
+												{% if item.quantity == 1 %}
+													<a class="btn btn-danger" href="{% url 'update-cart' item.food.id %}?name=delete_cart_item"><i class="fa-solid fa-trash"></i></a>
+												{% else %}
+													<a class="btn btn-warning" href="{% url 'update-cart' item.food.id %}?name=decrease_cart"><i class="fa-solid fa-minus"></i></a>
+												{% endif %}
+												<h5 class="card-title mx-1">{{item.quantity}}</h5>
+												<a class="btn btn-primary" href="{% url 'update-cart' item.food.id %}?name=increase_cart"><i class="fa-solid fa-plus"></i></a>
+											</div>
+										</div>
+										<div class="border rounded">
+											<h5 class="card-title border-bottom m-1">Amount</h5>
+											<h5 class="card-title m-1">{% widthratio item.food.price 1 item.quantity %}</h5>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+			<div class="col-md-4">
+				<div class="card">
+					<div class="card-body">
+						<h3 class="border-bottom">The Total Amount of:</h3>
+						<ul class="list-group">
+							{% for item in cartitems %}
+								<li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 pb-0">{{item.food.name}}
+									<span>{% widthratio item.food.price 1 item.quantity %}</span>
+								</li>
+							{% endfor %}
+							<li class="list-group-item d-flex justify-content-between align-items-center border-0 border-top px-0 mb-3 mt-3">
+								<strong>Total</strong>
+								<strong>{{total_amount}}</strong>
+							</li>
+						</ul>
+						<div class="d-grid">
+							<form action="/checkout/" method="post" id="paypalform">
+								{% csrf_token %}
+								<input type="hidden" name="paymode" value="Online">
+								<input type="hidden" name="paygate" value="Paypal">
+								<div id="paypal-button-container"></div>
+							</form>
+							<form action="/checkout/" method="post" id="cashform">
+								{% csrf_token %}
+								<input type="hidden" name="paymode" value="Cash">
+								<div class="d-grid">
+									<input type="submit" class="btn btn-primary p-2 fw-semibold" value="Pay Cash On Delivery">
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+				<h5 class="alert alert-warning text-center mt-3 p-2 border border-warning border-3">Note: You Can Collect You Order from Canteen When <strong>Status</strong> is <strong>Packed</strong> in <a href="{% url 'my-orders' %}">My Orders</a> Page</h5>
+			</div>
+		</div>
+		<div id="os"></div>
+	{% else %}
+		<h1 class="alert alert-info text-center mt-5">Your Cart is Empty</h1>
+	{% endif %}
+	
+{% endblock maincontent %}
+
+{% block payment-gateway %}
+<script src="https://www.paypal.com/sdk/js?client-id=AdstVdkXtBT7eFeAKT1PuFTYmnm3a9HgAeyqXiJtxNKFQJav05K7ljkgv6e1EbefJo_crAAgYXsElPcf&currency=USD"></script>
+
+    <script>
+        // Render the PayPal button into #paypal-button-container
+        paypal.Buttons({
+
+            // Set up the transaction
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: '{{total_amount}}'
+                        }
+                    }]
+                });
+            },
+
+            // Finalize the transaction
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(orderData) {
+                    // Successful capture! For demo purposes:
+                    // console.log('Capture result', orderData, JSON.stringify(orderData, null, 2));
+                    var transaction = orderData.purchase_units[0].payments.captures[0];
+                    alert('Transaction '+ transaction.status + ': ' + transaction.id + '\n\nOrder Placed Successfully' + '\nClick OK to Proceed Further');
+					
+					form = document.getElementById('paypalform')
+					hidnInp = document.createElement("input")
+					hidnInp.setAttribute('type', 'hidden')
+					hidnInp.setAttribute('name', 'tn_id')
+					hidnInp.setAttribute('value', transaction.id)
+					form.appendChild(hidnInp)
+					document.getElementById('paypalform').submit()
+					
+                    // Replace the above to show a success message within this page, e.g.
+                    // const element = document.getElementById('paypal-button-container');
+                    // element.innerHTML = '';
+                    // element.innerHTML = '<h3>Thank you for your payment!</h3>';
+                    // Or go to another URL:  actions.redirect('thank_you.html');
+                });
+            }
+
+
+        }).render('#paypal-button-container');
+    </script>
+{% endblock payment-gateway %}
