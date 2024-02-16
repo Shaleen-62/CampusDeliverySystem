@@ -20,10 +20,10 @@ class TestCheckoutScenario(StaticLiveServerTestCase):
 
     def test_checkout_scenario(self):
         # Open home page
-        self.browser.get(self.live_server_url)  # Replace with your home page URL
+        self.browser.get(self.live_server_url) 
 
         # Click on log in
-        login_url = reverse('login')  # Replace with your actual login URL
+        login_url = reverse('login')  
         self.browser.find_element_by_xpath(f"//a[@href='{login_url}']").click()
 
         # Log in with unprecedented credentials
@@ -32,7 +32,7 @@ class TestCheckoutScenario(StaticLiveServerTestCase):
         self.browser.find_element_by_id('submit').click()
 
         # Register new credentials
-        register_url = reverse('register')  # Replace with your actual registration URL
+        register_url = reverse('register') 
         self.browser.find_element_by_xpath(f"//a[@href='{register_url}']").click()
         self.browser.find_element_by_name('username').send_keys('newuser')
         self.browser.find_element_by_name('password1').send_keys('newpassword')
@@ -45,18 +45,16 @@ class TestCheckoutScenario(StaticLiveServerTestCase):
         self.browser.find_element_by_id('submit').click()
 
         # Add item with id 1 to the cart
-        add_to_cart_url = reverse('add_to_cart', args=[1])  # Replace with your actual add to cart URL
+        add_to_cart_url = reverse('update_cart', args=[1])  
         self.browser.get(add_to_cart_url)
 
         # Proceed to checkout using Cash on Delivery
-        checkout_url = reverse('checkout')  # Replace with your actual checkout URL
+        checkout_url = reverse('checkout') 
         self.browser.get(checkout_url)
         self.browser.find_element_by_name('payment_mode').send_keys('Cash')
         self.browser.find_element_by_id('submit').click()
 
-        # Optionally, you can add assertions to check the success message or the state of your models
         time.sleep(2)  # Allow some time for the page to process before assertions
 
-        # Example assertion - check for success message on the checkout page
         success_message = self.browser.find_element_by_css_selector('.alert-success').text
-        self.assertIn('Order placed successfully!', success_message)
+        self.assertIn('Order Id', success_message)
