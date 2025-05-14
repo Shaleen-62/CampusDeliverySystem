@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from canteen.models import FoodItem
 from django.db.models import Q
+from django.core.mail import send_mail
+from django.conf import settings
 from .models import Cart, Orders, OrderItems
 from .forms import LoginRegisterForm
 import random
@@ -40,6 +42,7 @@ def register(request):
         form = LoginRegisterForm(request.POST)
         un = request.POST.get('username')
         pw = request.POST.get('password')
+        email = request.POST.get('email')
         if(User.objects.filter(username=un).exists()):
             messages.warning(request, 'User Already Exists, try other unique username')
             return HttpResponseRedirect('/register/')
@@ -47,7 +50,8 @@ def register(request):
             if(form.is_valid()):
                 un = form.cleaned_data['username']
                 pw = form.cleaned_data['password']
-                new_user = User(username=un)
+                mail = form.cleaned_data['email']
+                new_user = User(username=un,email=email)
                 new_user.set_password(pw)
                 new_user.save()
                 messages.success(request, 'Account Created Successfully, You can Login Now')
@@ -61,6 +65,7 @@ def user_login(request):
         form = LoginRegisterForm(request.POST)
         un = request.POST.get('username')
         pw = request.POST.get('password')
+        email = request.POST.get('email')
         if(not User.objects.filter(username=un).exists()):
             messages.warning(request, 'User Does Not Exist or Wrong Password, Try Again')
             return HttpResponseRedirect('/login/')
@@ -152,6 +157,17 @@ def checkout(request):
         total_amount = 0
         new_order = Orders(username=request.user, total_amount=total_amount, payment_mode=payment_mode, transaction_id=tn_id, payment_gateway=payment_gateway)
         new_order.save()
+
+        print(request.user.username)
+        subject = 'Welcome to Your Canteen Ordering System'
+        message = f'Thank you for registering, {request.user.username}!'
+        from_email = settings.EMAIL_HOST_USER
+        recipient_list = [request.user.email]
+        print("sending mail")
+        # send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+        print("mail sent")
+
+        
         if(cartitems):
             for item in cartitems:
                 OrderItems(username=request.user, order=new_order, name=item.food.name, price=item.food.price, quantity=item.quantity, item_total=item.food.price * item.quantity).save()
